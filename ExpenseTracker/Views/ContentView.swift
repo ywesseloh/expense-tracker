@@ -49,7 +49,13 @@ struct ContentView: View {
     }
 }
 
-#Preview {
+#Preview {    
     ContentView()
-        .modelContainer(for: Expense.self, inMemory: true)
+        .modelContainer(for: Expense.self, inMemory: true) { result in
+            if case .success(let container) = result {
+                for expense in Expense.samples {
+                    container.mainContext.insert(expense)
+                }
+            }
+        }
 }

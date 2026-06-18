@@ -18,3 +18,12 @@ final class Expense {
         self.timestamp = timestamp
     }
 }
+
+extension Expense {
+    static var samples = [
+        Expense(title: "Bread", timestamp: .now),
+        Expense(title: "Netflix", timestamp: .now),
+        Expense(title: "Gasoline", timestamp: .now),
+        Expense(title: "Shoes", timestamp: .now)
+    ]
+}
