@@ -22,11 +22,13 @@ struct ExpenseTrackerApp: App {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
-
+    @State private var currencyManager = CurrencyManager()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
         }
         .modelContainer(sharedModelContainer)
+        .environment(currencyManager)
     }
 }

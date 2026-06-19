@@ -11,8 +11,10 @@ import SwiftData
 struct CreateExpenseView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(CurrencyManager.self) private var currencyManager
 
     @State private var title = ""
+    @State private var priceText: String = ""
     @State private var showCancelConfirmation = false
     
     var body: some View {
@@ -22,13 +24,23 @@ struct CreateExpenseView: View {
                     .font(.title.bold())
                     .padding(.top, 50)
                     .padding(.leading)
+                HStack {
+                    Text(currencyManager.currencySymbol)
+                    TextField("Price (Required)", text: $priceText)
+                        .onChange(of: priceText) { _, newValue in
+                            priceText = currencyManager.formatInput(newValue)
+                        }
+                        .keyboardType(.decimalPad)
+                }
+                .font(.title)
+                .padding()
                 Spacer()
             }
             .navigationTitle("New Expense")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel", systemImage: "xmark") {
-                        if title.isEmpty {
+                        if title.isEmpty, priceText.isEmpty {
                             dismiss()
                         } else {
                             showCancelConfirmation = true
@@ -41,21 +53,28 @@ struct CreateExpenseView: View {
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Add", systemImage: "checkmark") {
-                        let newExpense = Expense(
-                            title: title,
-                            timestamp: .now
-                        )
-                        modelContext.insert(newExpense)
-                        try? modelContext.save()
-                        dismiss()
-                    }.disabled(title.isEmpty)
+                    Button("Add", systemImage: "checkmark", action: addExpense)
+                        .disabled(title.isEmpty || priceText.isEmpty)
                 }
             }
         }
     }
+    
+    private func addExpense() {
+        guard let decimalPrice = currencyManager.decimalPrice(from: priceText) else { return }
+        let newExpense = Expense(
+            title: title,
+            price: currencyManager.minorUnits(from: decimalPrice),
+            timestamp: .now
+        )
+        modelContext.insert(newExpense)
+        try? modelContext.save()
+        dismiss()
+    }
+
 }
 
 #Preview {
     CreateExpenseView()
+        .previewDependencies()
 }

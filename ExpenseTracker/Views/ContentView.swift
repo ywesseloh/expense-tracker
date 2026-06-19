@@ -10,17 +10,21 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(CurrencyManager.self) private var currencyManager
+    
     @State private var showCreateExpense = false
-    @Query private var items: [Expense]
+    @Query private var expenses: [Expense]
 
     var body: some View {
         NavigationStack {
             List {
-                ForEach(items) { item in
+                ForEach(expenses) { expense in
                     NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
+                        Text(expense.title)
+                        Text(currencyManager.decimalPrice(from: expense.price), format: .currency(code: "EUR"))
                     } label: {
-                        Text(item.title)
+                        Text(expense.title)
+                        Text(currencyManager.decimalPrice(from: expense.price), format: .currency(code: "EUR"))
                     }
                 }
                 .onDelete(perform: deleteItems)
@@ -43,7 +47,7 @@ struct ContentView: View {
     private func deleteItems(offsets: IndexSet) {
         withAnimation {
             for index in offsets {
-                modelContext.delete(items[index])
+                modelContext.delete(expenses[index])
             }
         }
     }
@@ -51,6 +55,7 @@ struct ContentView: View {
 
 #Preview {    
     ContentView()
+        .previewDependencies()
         .modelContainer(for: Expense.self, inMemory: true) { result in
             if case .success(let container) = result {
                 for expense in Expense.samples {
