@@ -7,9 +7,20 @@
 
 import Foundation
 import SwiftUI
+import SwiftData
 
 extension View {
-    func previewDependencies() -> some View {
-        return self.environment(CurrencyManager())
+    func applyDependencies(_ dependencies: AppDependencies = .init(isPreview: true)) -> some View {
+        return self
+            .modelContainer(dependencies.modelContainer)
+            .environment(dependencies.currencyManager)
+    }
+}
+
+extension Scene {
+    func applyDependencies(_ dependencies: AppDependencies) -> some Scene {
+        return self
+            .modelContainer(dependencies.modelContainer)
+            .environment(dependencies.currencyManager)
     }
 }

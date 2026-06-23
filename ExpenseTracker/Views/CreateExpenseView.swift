@@ -16,25 +16,36 @@ struct CreateExpenseView: View {
     @State private var title = ""
     @State private var priceText: String = ""
     @State private var showCancelConfirmation = false
+    @State private var date: Date = .now
     
+    @Query private var categories: [ExpenseCategory]
+    @State private var selectedCategory: ExpenseCategory?
+        
     var body: some View {
         NavigationStack {
-            VStack {
-                TextField("Title (Required)", text: $title)
-                    .font(.title.bold())
-                    .padding(.top, 50)
-                    .padding(.leading)
-                HStack {
-                    Text(currencyManager.currencySymbol)
+            List {
+                Section {
+                    TextField("Title (Required)", text: $title)
                     TextField("Price (Required)", text: $priceText)
                         .onChange(of: priceText) { _, newValue in
                             priceText = currencyManager.formatInput(newValue)
                         }
                         .keyboardType(.decimalPad)
                 }
-                .font(.title)
-                .padding()
-                Spacer()
+                
+                Section {
+                    NavigationLink {
+                        SelectCategoryView(selectedCategory: $selectedCategory)
+                    } label: {
+                        HStack {
+                            Text("Category")
+                            Spacer()
+                            Text(selectedCategory?.title ?? "No Selection")
+                        }
+                        
+                    }
+                    DatePicker("Date", selection: $date)
+                }
             }
             .navigationTitle("New Expense")
             .toolbar {
@@ -76,5 +87,5 @@ struct CreateExpenseView: View {
 
 #Preview {
     CreateExpenseView()
-        .previewDependencies()
+        .applyDependencies()
 }
