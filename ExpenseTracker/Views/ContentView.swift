@@ -12,7 +12,7 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(CurrencyManager.self) private var currencyManager
     
-    @State private var showCreateExpense = false
+    @State private var showSheetWithContext: EditExpenseView.Context?
     
     @Query(sort: \Expense.timestamp)
     private var expenses: [Expense]
@@ -24,29 +24,30 @@ struct ContentView: View {
         NavigationStack {
             List {
                 ForEach(expenses) { expense in
-                    NavigationLink {
-                        Text(expense.title)
-                        Text(currencyManager.decimalPrice(from: expense.price), format: .currency(code: "EUR"))
-                        Text(expense.category.title)
+                    Button {
+                        showSheetWithContext = .edit(expense: expense)
                     } label: {
-                        Text(expense.title)
-                        Text(currencyManager.decimalPrice(from: expense.price), format: .currency(code: "EUR"))
-                        Text(expense.category.title)
-                    }
+                        HStack {
+                            Text(expense.title).contentShape(Rectangle())
+                            Text(currencyManager.decimalPrice(from: expense.price), format: .currency(code: "EUR"))
+                            Text(expense.category.title)
+                            Spacer()
+                        }
+                    }.tint(.primary)
                 }
                 .onDelete(perform: deleteItems)
             }
             .toolbar {
                 ToolbarItem {
                     Button(action: {
-                        showCreateExpense = true
+                        showSheetWithContext = .new(initialCategory: categories.first!)
                     }, label: {
                         Label("Add Item", systemImage: "plus")
                     })
                 }
             }
-            .sheet(isPresented: $showCreateExpense) {
-                CreateExpenseView(initialCategory: categories.first)
+            .sheet(item: $showSheetWithContext) { context in
+                EditExpenseView(currencyManager: currencyManager, context: context)
             }
         }
     }

@@ -12,12 +12,19 @@ import Combine
 class CurrencyManager {
     let currencySymbol: String
     private let currencyFormatter: NumberFormatter
+    private let decimalFormatter: NumberFormatter
     
     init(locale: Locale = .current) {
         self.currencyFormatter = NumberFormatter()
         currencyFormatter.numberStyle = .currency
         currencyFormatter.locale = locale
         currencySymbol = locale.currencySymbol ?? "€"
+        
+        self.decimalFormatter = NumberFormatter()
+        decimalFormatter.numberStyle = .decimal
+        decimalFormatter.locale = Locale.current
+        decimalFormatter.minimumFractionDigits = currencyFormatter.minimumFractionDigits
+        decimalFormatter.maximumFractionDigits = currencyFormatter.maximumFractionDigits
     }
     
     func formatInput(_ input: String) -> String {
@@ -45,10 +52,7 @@ class CurrencyManager {
     }
     
     func decimalPrice(from priceText: String) -> Decimal? {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.locale = Locale.current
-        return formatter.number(from: priceText)?.decimalValue
+        return decimalFormatter.number(from: priceText)?.decimalValue
     }
     
     func decimalPrice(from minorUnits: Int) -> Decimal {
@@ -56,10 +60,17 @@ class CurrencyManager {
         return Decimal(minorUnits) / Decimal(multiplier)
     }
     
-    func minorUnits(from decimalPrice: Decimal) -> Int {
+    func minorUnits(from priceText: String) -> Int? {
+        guard let decimalPrice = decimalPrice(from: priceText) else { return nil }
+        
         let multiplier = minorUnitMultiplier()
         let minorUnits = decimalPrice * Decimal(multiplier)
         return NSDecimalNumber(decimal: minorUnits).intValue
+    }
+    
+    func priceText(from minorUnits: Int) -> String? {
+        let decimalPrice = decimalPrice(from: minorUnits)
+        return decimalFormatter.string(from: decimalPrice as NSNumber)
     }
     
     private func minorUnitMultiplier() -> Int {
