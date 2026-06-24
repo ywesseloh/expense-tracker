@@ -13,7 +13,12 @@ struct ContentView: View {
     @Environment(CurrencyManager.self) private var currencyManager
     
     @State private var showCreateExpense = false
-    @Query private var expenses: [Expense]
+    
+    @Query(sort: \Expense.timestamp)
+    private var expenses: [Expense]
+    
+    @Query(sort: \ExpenseCategory.timestamp)
+    private var categories: [ExpenseCategory]
 
     var body: some View {
         NavigationStack {
@@ -22,9 +27,11 @@ struct ContentView: View {
                     NavigationLink {
                         Text(expense.title)
                         Text(currencyManager.decimalPrice(from: expense.price), format: .currency(code: "EUR"))
+                        Text(expense.category.title)
                     } label: {
                         Text(expense.title)
                         Text(currencyManager.decimalPrice(from: expense.price), format: .currency(code: "EUR"))
+                        Text(expense.category.title)
                     }
                 }
                 .onDelete(perform: deleteItems)
@@ -39,7 +46,7 @@ struct ContentView: View {
                 }
             }
             .sheet(isPresented: $showCreateExpense) {
-                CreateExpenseView()
+                CreateExpenseView(initialCategory: categories.first)
             }
         }
     }

@@ -18,9 +18,12 @@ struct CreateExpenseView: View {
     @State private var showCancelConfirmation = false
     @State private var date: Date = .now
     
-    @Query private var categories: [ExpenseCategory]
     @State private var selectedCategory: ExpenseCategory?
-        
+    
+    init(initialCategory: ExpenseCategory?) {
+        _selectedCategory = State(initialValue: initialCategory)
+    }
+    
     var body: some View {
         NavigationStack {
             List {
@@ -72,11 +75,12 @@ struct CreateExpenseView: View {
     }
     
     private func addExpense() {
-        guard let decimalPrice = currencyManager.decimalPrice(from: priceText) else { return }
+        guard let decimalPrice = currencyManager.decimalPrice(from: priceText), let category = selectedCategory else { return }
         let newExpense = Expense(
             title: title,
             price: currencyManager.minorUnits(from: decimalPrice),
-            timestamp: .now
+            timestamp: .now,
+            category: category
         )
         modelContext.insert(newExpense)
         try? modelContext.save()
@@ -86,6 +90,6 @@ struct CreateExpenseView: View {
 }
 
 #Preview {
-    CreateExpenseView()
+    CreateExpenseView(initialCategory: nil)
         .applyDependencies()
 }

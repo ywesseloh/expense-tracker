@@ -11,7 +11,7 @@ import SwiftData
 struct SelectCategoryView: View {
     
     @Environment(\.dismiss) private var dismiss
-    @Query//(sort: \ExpenseCategory.id)
+    @Query(sort: \ExpenseCategory.timestamp)
     private var categories: [ExpenseCategory]
     
     @Binding var selectedCategory: ExpenseCategory?
@@ -20,24 +20,20 @@ struct SelectCategoryView: View {
         NavigationStack {
             List {
                 ForEach(categories) { category in
-                    Button(action: {
+                    Button {
                         selectedCategory = category
                         dismiss()
-                    }, label: {
+                    } label: {
                         HStack {
                             Text(category.title)
                             Spacer()
                             
                             if(category == selectedCategory) {
-                                Image(systemName: "checkmark.circle")
+                                Image(systemName: "checkmark").foregroundColor(.blue)
                             }
                         }
-                    })
-                    
-//                    Button(category.title) {
-//                        selectedCategory = category
-//                        dismiss()
-//                    }
+                    }
+                    .tint(.primary)
                 }
             }
             .navigationTitle("Select Category")
@@ -46,6 +42,8 @@ struct SelectCategoryView: View {
 }
 
 #Preview {
-    SelectCategoryView(selectedCategory: .constant(nil))
+    @Previewable @State var selectedCategory: ExpenseCategory?
+    
+    SelectCategoryView(selectedCategory: $selectedCategory)
         .applyDependencies()
 }
