@@ -24,10 +24,22 @@ final class Expense {
 }
 
 extension Expense {
-    static var samples = [
-        Expense(title: "Bread", price: 350, timestamp: .now, category: ExpenseCategory.initialCategories[1]),
-        Expense(title: "Netflix", price: 1000, timestamp: .now, category: ExpenseCategory.initialCategories[5]),
-        Expense(title: "Gasoline", price: 4537, timestamp: .now, category: ExpenseCategory.initialCategories[3]),
-        Expense(title: "Shoes", price: 7525, timestamp: .now,category:  ExpenseCategory.initialCategories[4])
+    static var shortSamples = [
+        Expense(title: "Bread", price: 350, timestamp: .now, category: .groceries),
+        Expense(title: "Netflix", price: 1000, timestamp: .now, category: .entertainment),
+        Expense(title: "Gasoline", price: 4537, timestamp: .now, category: .transport),
+        Expense(title: "Shoes", price: 7525, timestamp: .now,category: .shopping)
+    ]
+    
+    static var longSamples = [
+        Expense(title: "Bread", price: 350, timestamp: .now, category: .groceries),
+        Expense(title: "Netflix", price: 1000, timestamp: .now, category: .entertainment),
+        Expense(title: "Gasoline", price: 4537, timestamp: .now, category: .transport),
+        Expense(title: "Shoes", price: 7525, timestamp: .now,category:  .shopping),
+        Expense(title: "Tomato", price: 340, timestamp: .yesterday, category: .groceries),
+        Expense(title: "Playstation", price: 40000, timestamp: .yesterday, category: .entertainment),
+        Expense(title: "Toothbrush", price: 7525, timestamp: .yesterday, category:  .noCategory),
+        Expense(title: "Tshirt", price: 7525, timestamp: .dayBeforeYesterday, category: .shopping),
+        Expense(title: "Rent", price: 70000, timestamp: .dayBeforeYesterday,category:  .housing)
     ]
 }

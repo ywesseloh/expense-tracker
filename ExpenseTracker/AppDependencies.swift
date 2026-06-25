@@ -12,7 +12,7 @@ class AppDependencies {
     let modelContainer: ModelContainer
     let currencyManager: CurrencyManager
     
-    convenience init(isPreview: Bool = false) {
+    init(isPreview: Bool = false) {
         do {
             // Create Model Containter
             let schema = Schema([
@@ -35,22 +35,11 @@ class AppDependencies {
                 try context.save()
             }
             
-            // For Preview, add sample expenses
-            if isPreview {
-                for expense in Expense.samples {
-                    context.insert(expense)
-                }
-            }
-            
-            self.init(modelContainer: modelContainer)
+            self.modelContainer = modelContainer
+            self.currencyManager = CurrencyManager()
             
         } catch {
             fatalError("Could not initialize AppDependencies: \(error)")
         }
-    }
-    
-    init(modelContainer: ModelContainer) {
-        self.modelContainer = modelContainer
-        self.currencyManager = CurrencyManager()
     }
 }

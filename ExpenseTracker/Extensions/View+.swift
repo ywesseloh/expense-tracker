@@ -10,7 +10,11 @@ import SwiftUI
 import SwiftData
 
 extension View {
-    func applyDependencies(_ dependencies: AppDependencies = .init(isPreview: true)) -> some View {
+    func applyDependencies(_ dependencies: AppDependencies = .init(isPreview: true), expenseSamples: [Expense] = []) -> some View {
+        for expense in expenseSamples {
+            dependencies.modelContainer.mainContext.insert(expense)
+        }
+        
         return self
             .modelContainer(dependencies.modelContainer)
             .environment(dependencies.currencyManager)

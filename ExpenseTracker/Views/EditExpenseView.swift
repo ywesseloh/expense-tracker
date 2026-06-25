@@ -136,6 +136,6 @@ extension EditExpenseView {
 }
 
 #Preview {
-    EditExpenseView(currencyManager: CurrencyManager(), context: .new(initialCategory: ExpenseCategory.initialCategories.first!))
+    EditExpenseView(currencyManager: CurrencyManager(), context: .new(initialCategory: .noCategory))
         .applyDependencies()
 }

@@ -25,12 +25,19 @@ final class ExpenseCategory {
 }
 
 extension ExpenseCategory {
+    static var noCategory = ExpenseCategory(title: "No Category", colorHex: Color.gray.toHex()!, iconIdentifier: "tray.fill")
+    static var groceries = ExpenseCategory(title: "Groceries", colorHex: Color.cyan.toHex()!, iconIdentifier: "cart.fill")
+    static var housing = ExpenseCategory(title: "Housing", colorHex: Color.red.toHex()!, iconIdentifier: "house.fill")
+    static var transport = ExpenseCategory(title: "Transport", colorHex: Color.purple.toHex()!, iconIdentifier: "car.fill")
+    static var shopping = ExpenseCategory(title: "Shopping", colorHex: Color.green.toHex()!, iconIdentifier: "handbag.fill")
+    static var entertainment = ExpenseCategory(title: "Entertainment", colorHex: Color.orange.toHex()!, iconIdentifier: "theatermasks.fill")
+    
     static var initialCategories: [ExpenseCategory] = [
-        .init(title: "No Category", colorHex: Color.gray.toHex()!, iconIdentifier: "tray.fill"),
-        .init(title: "Groceries", colorHex: Color.cyan.toHex()!, iconIdentifier: "cart.fill"),
-        .init(title: "Housing", colorHex: Color.red.toHex()!, iconIdentifier: "house.fill"),
-        .init(title: "Transport", colorHex: Color.purple.toHex()!, iconIdentifier: "car.fill"),
-        .init(title: "Shopping", colorHex: Color.green.toHex()!, iconIdentifier: "handbag.fill"),
-        .init(title: "Entertainment", colorHex: Color.orange.toHex()!, iconIdentifier: "theatermasks.fill"),
+        .noCategory,
+        .groceries,
+        .housing,
+        .transport,
+        .shopping,
+        .entertainment
     ]
 }

@@ -16,10 +16,7 @@ struct ContentView: View {
     
     @Query(sort: \Expense.timestamp)
     private var expenses: [Expense]
-    
-    @Query(sort: \ExpenseCategory.timestamp)
-    private var categories: [ExpenseCategory]
-    
+        
     private var expensesByDate: [Date: [Expense]] {
         Dictionary(grouping: expenses) { expense in
             Calendar.current.startOfDay(for: expense.timestamp)
@@ -32,36 +29,43 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                HStack {
-                    Text(
-                        currencyManager.decimalPrice(from: sum(expenses: expenses)),
-                        format: .currency(code: currencyManager.currencyCode)
-                    )
-                    .font(.title)
-                    .padding()
-                }
-                
-                ForEach(sortedDates, id: \.self) { date in
-                    Section(header: dateHeaderview(date: date)) {
-                        ForEach(expensesByDate[date] ?? []) { expense in
-                            expenseRowView(expense: expense)
-                        }.onDelete(perform: deleteItems)
+            ZStack(alignment: .bottomTrailing) {
+                ZStack {
+                    expensesListView
+                    if(expenses.isEmpty) {
+                        emptyView
                     }
                 }
-            }
-            .toolbar {
-                ToolbarItem {
-                    Button {
-                        guard let category = categories.first else { return }
-                        showSheetWithContext = .new(initialCategory: category)
-                    } label: {
-                        Label("Add Item", systemImage: "plus")
-                    }
+                Button {
+                    showSheetWithContext = .new(initialCategory: .noCategory)
+                } label: {
+                    FloatingButtonView(backgroundColor: .blue, foregroundColor: .white, imageName: "plus")
                 }
+                .padding()
             }
             .sheet(item: $showSheetWithContext) { context in
                 EditExpenseView(currencyManager: currencyManager, context: context)
+            }
+        }
+    }
+    
+    private var expensesListView: some View {
+        List {
+            HStack {
+                Text(
+                    currencyManager.decimalPrice(from: sum(expenses: expenses)),
+                    format: .currency(code: currencyManager.currencyCode)
+                )
+                .font(.title)
+                .padding()
+            }
+            
+            ForEach(sortedDates, id: \.self) { date in
+                Section(header: dateHeaderview(date: date)) {
+                    ForEach(expensesByDate[date] ?? []) { expense in
+                        expenseRowView(expense: expense)
+                    }.onDelete(perform: deleteItems)
+                }
             }
         }
     }
@@ -83,7 +87,7 @@ struct ContentView: View {
         } label: {
             HStack {
                 CategoryIconView(category: expense.category)
-                Text(expense.title).contentShape(Rectangle())
+                Text(expense.title)
                 Spacer()
                 Text(
                     currencyManager.decimalPrice(from: expense.price),
@@ -91,6 +95,18 @@ struct ContentView: View {
                 )
             }
         }.tint(.primary)
+    }
+    
+    private var emptyView: some View {
+        VStack {
+            Image(systemName: "tray")
+                .font(.system(size: 40))
+                .padding()
+            
+            Text("Add your first expense by tapping the plus Button")
+                .font(.title3)
+                .multilineTextAlignment(.center)
+        }
     }
 
     private func deleteItems(offsets: IndexSet) {
@@ -108,7 +124,17 @@ struct ContentView: View {
     }
 }
 
-#Preview {    
+#Preview("Long List") {
+    ContentView()
+        .applyDependencies(expenseSamples: Expense.longSamples)
+}
+
+#Preview("Short List") {
+    ContentView()
+        .applyDependencies(expenseSamples: Expense.shortSamples)
+}
+
+#Preview("No entries") {
     ContentView()
         .applyDependencies()
 }

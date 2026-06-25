@@ -43,7 +43,7 @@ struct SelectCategoryView: View {
 }
 
 #Preview {
-    @Previewable @State var selectedCategory = ExpenseCategory.initialCategories.first!
+    @Previewable @State var selectedCategory = ExpenseCategory.noCategory
     
     SelectCategoryView(selectedCategory: $selectedCategory)
         .applyDependencies()
