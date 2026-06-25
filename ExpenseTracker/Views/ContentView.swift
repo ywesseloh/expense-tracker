@@ -28,10 +28,10 @@ struct ContentView: View {
                         showSheetWithContext = .edit(expense: expense)
                     } label: {
                         HStack {
+                            CategoryIconView(category: expense.category)
                             Text(expense.title).contentShape(Rectangle())
-                            Text(currencyManager.decimalPrice(from: expense.price), format: .currency(code: "EUR"))
-                            Text(expense.category.title)
                             Spacer()
+                            Text(currencyManager.decimalPrice(from: expense.price), format: .currency(code: "EUR"))
                         }
                     }.tint(.primary)
                 }
@@ -39,11 +39,12 @@ struct ContentView: View {
             }
             .toolbar {
                 ToolbarItem {
-                    Button(action: {
-                        showSheetWithContext = .new(initialCategory: categories.first!)
-                    }, label: {
+                    Button {
+                        guard let category = categories.first else { return }
+                        showSheetWithContext = .new(initialCategory: category)
+                    } label: {
                         Label("Add Item", systemImage: "plus")
-                    })
+                    }
                 }
             }
             .sheet(item: $showSheetWithContext) { context in

@@ -14,7 +14,7 @@ struct SelectCategoryView: View {
     @Query(sort: \ExpenseCategory.timestamp)
     private var categories: [ExpenseCategory]
     
-    @Binding var selectedCategory: ExpenseCategory?
+    @Binding var selectedCategory: ExpenseCategory
     
     var body: some View {
         NavigationStack {
@@ -25,6 +25,7 @@ struct SelectCategoryView: View {
                         dismiss()
                     } label: {
                         HStack {
+                            CategoryIconView(category: category)
                             Text(category.title)
                             Spacer()
                             
@@ -42,7 +43,7 @@ struct SelectCategoryView: View {
 }
 
 #Preview {
-    @Previewable @State var selectedCategory: ExpenseCategory?
+    @Previewable @State var selectedCategory = ExpenseCategory.initialCategories.first!
     
     SelectCategoryView(selectedCategory: $selectedCategory)
         .applyDependencies()

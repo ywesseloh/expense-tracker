@@ -18,7 +18,7 @@ struct EditExpenseView: View {
     @State private var title = ""
     @State private var priceText: String = ""
     @State private var date: Date = .now
-    @State private var selectedCategory: ExpenseCategory?
+    @State private var selectedCategory: ExpenseCategory
     
     private var context: Context
     
@@ -54,7 +54,8 @@ struct EditExpenseView: View {
                         HStack {
                             Text("Category")
                             Spacer()
-                            Text(selectedCategory?.title ?? "No Selection")
+                            CategoryIconView(category: selectedCategory)
+                            Text(selectedCategory.title)
                         }
                         
                     }
@@ -86,8 +87,7 @@ struct EditExpenseView: View {
     }
     
     private func updateExpense() {
-        print(priceText, selectedCategory?.title)
-        guard let price = currencyManager.minorUnits(from: priceText), let category = selectedCategory else { return }
+        guard let price = currencyManager.minorUnits(from: priceText) else { return }
         
         switch context {
         case .new:  // Create new expense
@@ -95,7 +95,7 @@ struct EditExpenseView: View {
                 title: title,
                 price: price,
                 timestamp: date,
-                category: category
+                category: selectedCategory
             )
             modelContext.insert(newExpense)
             try? modelContext.save()
@@ -103,7 +103,7 @@ struct EditExpenseView: View {
             expense.title = title
             expense.price = price
             expense.timestamp = date
-            expense.category = category
+            expense.category = selectedCategory
         }
         
         dismiss()
@@ -136,6 +136,6 @@ extension EditExpenseView {
 }
 
 #Preview {
-    EditExpenseView(currencyManager: CurrencyManager(), context: .new(initialCategory: .init(title: "Bla")))
+    EditExpenseView(currencyManager: CurrencyManager(), context: .new(initialCategory: ExpenseCategory.initialCategories.first!))
         .applyDependencies()
 }
