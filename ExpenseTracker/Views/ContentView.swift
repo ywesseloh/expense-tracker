@@ -14,7 +14,7 @@ struct ContentView: View {
     
     @State private var showSheetWithContext: EditExpenseView.Context?
     
-    @Query(sort: \Expense.timestamp)
+    @Query(sort: \Expense.timestamp, order: .reverse)
     private var expenses: [Expense]
         
     private var expensesByDate: [Date: [Expense]] {
@@ -22,9 +22,11 @@ struct ContentView: View {
             Calendar.current.startOfDay(for: expense.timestamp)
         }
     }
-    
-    private var sortedDates: [Date] {
-        expensesByDate.keys.sorted(by: >)  // descending
+
+    var groupedExpenses: [(date: Date, expenses: [Expense])] {
+        expensesByDate
+            .map { (date: $0.key, expenses: $0.value) }
+            .sorted { $0.date > $1.date }
     }
 
     var body: some View {
@@ -60,11 +62,13 @@ struct ContentView: View {
                 .padding()
             }
             
-            ForEach(sortedDates, id: \.self) { date in
-                Section(header: dateHeaderview(date: date)) {
-                    ForEach(expensesByDate[date] ?? []) { expense in
+            ForEach(groupedExpenses.enumerated(), id: \.offset) { index, group in
+                Section(header: dateHeaderview(date: group.date)) {
+                    ForEach(group.expenses) { expense in
                         expenseRowView(expense: expense)
-                    }.onDelete(perform: deleteItems)
+                    }.onDelete { offsets in
+                        deleteItems(sectionIndex: index, offsets: offsets)
+                    }
                 }
             }
         }
@@ -109,11 +113,12 @@ struct ContentView: View {
         }
     }
 
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(expenses[index])
-            }
+    private func deleteItems(sectionIndex: Int, offsets: IndexSet) {
+        let group = groupedExpenses[sectionIndex]
+        
+        for index in offsets {
+            let expense = group.expenses[index]
+            modelContext.delete(expense)
         }
     }
     
