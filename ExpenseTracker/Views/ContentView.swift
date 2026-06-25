@@ -19,23 +19,36 @@ struct ContentView: View {
     
     @Query(sort: \ExpenseCategory.timestamp)
     private var categories: [ExpenseCategory]
+    
+    private var expensesByDate: [Date: [Expense]] {
+        Dictionary(grouping: expenses) { expense in
+            Calendar.current.startOfDay(for: expense.timestamp)
+        }
+    }
+    
+    private var sortedDates: [Date] {
+        expensesByDate.keys.sorted(by: >)  // descending
+    }
 
     var body: some View {
         NavigationStack {
             List {
-                ForEach(expenses) { expense in
-                    Button {
-                        showSheetWithContext = .edit(expense: expense)
-                    } label: {
-                        HStack {
-                            CategoryIconView(category: expense.category)
-                            Text(expense.title).contentShape(Rectangle())
-                            Spacer()
-                            Text(currencyManager.decimalPrice(from: expense.price), format: .currency(code: "EUR"))
-                        }
-                    }.tint(.primary)
+                HStack {
+                    Text(
+                        currencyManager.decimalPrice(from: sum(expenses: expenses)),
+                        format: .currency(code: currencyManager.currencyCode)
+                    )
+                    .font(.title)
+                    .padding()
                 }
-                .onDelete(perform: deleteItems)
+                
+                ForEach(sortedDates, id: \.self) { date in
+                    Section(header: dateHeaderview(date: date)) {
+                        ForEach(expensesByDate[date] ?? []) { expense in
+                            expenseRowView(expense: expense)
+                        }.onDelete(perform: deleteItems)
+                    }
+                }
             }
             .toolbar {
                 ToolbarItem {
@@ -52,6 +65,33 @@ struct ContentView: View {
             }
         }
     }
+    
+    private func dateHeaderview(date: Date) -> some View {
+        HStack {
+            Text(date, style: .date)
+            Spacer()
+            Text(
+                currencyManager.decimalPrice(from: sum(expenses: expensesByDate[date] ?? [])),
+                format: .currency(code: currencyManager.currencyCode)
+            )
+        }
+    }
+    
+    private func expenseRowView(expense: Expense) -> some View {
+        Button {
+            showSheetWithContext = .edit(expense: expense)
+        } label: {
+            HStack {
+                CategoryIconView(category: expense.category)
+                Text(expense.title).contentShape(Rectangle())
+                Spacer()
+                Text(
+                    currencyManager.decimalPrice(from: expense.price),
+                    format: .currency(code: currencyManager.currencyCode)
+                )
+            }
+        }.tint(.primary)
+    }
 
     private func deleteItems(offsets: IndexSet) {
         withAnimation {
@@ -59,6 +99,12 @@ struct ContentView: View {
                 modelContext.delete(expenses[index])
             }
         }
+    }
+    
+    private func sum(expenses: [Expense]) -> Int {
+        return expenses
+            .map { $0.price }
+            .reduce(0, +)
     }
 }
 

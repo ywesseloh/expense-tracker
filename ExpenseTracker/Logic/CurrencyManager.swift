@@ -11,6 +11,7 @@ import Combine
 @Observable
 class CurrencyManager {
     let currencySymbol: String
+    let currencyCode: String
     private let currencyFormatter: NumberFormatter
     private let decimalFormatter: NumberFormatter
     
@@ -19,6 +20,8 @@ class CurrencyManager {
         currencyFormatter.numberStyle = .currency
         currencyFormatter.locale = locale
         currencySymbol = locale.currencySymbol ?? "€"
+        currencyCode = locale.currency?.identifier ?? "EUR"
+
         
         self.decimalFormatter = NumberFormatter()
         decimalFormatter.numberStyle = .decimal
