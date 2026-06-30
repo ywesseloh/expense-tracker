@@ -42,7 +42,7 @@ struct ContentView: View {
                     if allExpenses.isEmpty {
                         emptyView
                     } else if filteredExpenses.isEmpty {
-                        Text("No expenses found for these filter criteria")
+                        filteredEmptyView
                     }
                 }
                 Button {
@@ -129,6 +129,18 @@ struct ContentView: View {
                 .padding()
             
             Text("Add your first expense by tapping the plus Button")
+                .font(.title3)
+                .multilineTextAlignment(.center)
+        }
+    }
+
+    private var filteredEmptyView: some View {
+        VStack {
+            Image(systemName: "line.3.horizontal.decrease.circle")
+                .font(.system(size: 40))
+                .padding()
+
+            Text("No expenses match the current filter criteria")
                 .font(.title3)
                 .multilineTextAlignment(.center)
         }
