@@ -13,12 +13,17 @@ struct ContentView: View {
     @Environment(CurrencyManager.self) private var currencyManager
     
     @State private var showSheetWithContext: EditExpenseView.Context?
+    @State private var selectedTimeframe: ExpenseTimeframe = .untilToday
     
     @Query(sort: \Expense.timestamp, order: .reverse)
-    private var expenses: [Expense]
+    private var allExpenses: [Expense]
+
+    private var filteredExpenses: [Expense] {
+        allExpenses.filter { selectedTimeframe.contains($0.timestamp) }
+    }
         
     private var expensesByDate: [Date: [Expense]] {
-        Dictionary(grouping: expenses) { expense in
+        Dictionary(grouping: filteredExpenses) { expense in
             Calendar.current.startOfDay(for: expense.timestamp)
         }
     }
@@ -34,8 +39,10 @@ struct ContentView: View {
             ZStack(alignment: .bottomTrailing) {
                 ZStack {
                     expensesListView
-                    if(expenses.isEmpty) {
+                    if allExpenses.isEmpty {
                         emptyView
+                    } else if filteredExpenses.isEmpty {
+                        Text("No expenses found for these filter criteria")
                     }
                 }
                 Button {
@@ -53,14 +60,28 @@ struct ContentView: View {
     
     private var expensesListView: some View {
         List {
-            HStack {
+            VStack(alignment: .leading, spacing: 8) {
+                Menu {
+                    ForEach(ExpenseTimeframe.allCases) { timeframe in
+                        Button(timeframe.title) {
+                            selectedTimeframe = timeframe
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Text(selectedTimeframe.title)
+                        Image(systemName: "chevron.down")
+                            .font(.caption)
+                    }
+                }
+
                 Text(
-                    currencyManager.decimalPrice(from: sum(expenses: expenses)),
+                    currencyManager.decimalPrice(from: sum(expenses: filteredExpenses)),
                     format: .currency(code: currencyManager.currencyCode)
                 )
                 .font(.title)
-                .padding()
             }
+            .padding()
             
             ForEach(groupedExpenses.enumerated(), id: \.offset) { index, group in
                 Section(header: dateHeaderview(date: group.date)) {
