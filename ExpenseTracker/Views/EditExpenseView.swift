@@ -15,23 +15,30 @@ struct EditExpenseView: View {
 
     @State private var showCancelConfirmation = false
 
-    @State private var title = ""
-    @State private var priceText: String = ""
-    @State private var date: Date = .now
+    @State private var title: String
+    @State private var priceText: String
+    @State private var date: Date
     @State private var selectedCategory: ExpenseCategory
-    
-    private var context: Context
+
+    private let initialState: InitialState
+    private let context: Context
+
+    private var hasUnsavedChanges: Bool {
+        title != initialState.title ||
+        priceText != initialState.priceText ||
+        date != initialState.date ||
+        selectedCategory != initialState.category
+    }
     
     init(currencyManager: CurrencyManager, context: Context) {
-        switch context {
-        case .new(let initialCategory):
-            _selectedCategory = State(initialValue: initialCategory)
-        case .edit(let expense):
-            _title = State(initialValue: expense.title)
-            _priceText = State(initialValue: currencyManager.priceText(from: expense.price) ?? "")
-            _date = State(initialValue: expense.timestamp)
-            _selectedCategory = State(initialValue: expense.category)
-        }
+        let initialState = InitialState(context: context, currencyManager: currencyManager)
+
+        _title = State(initialValue: initialState.title)
+        _priceText = State(initialValue: initialState.priceText)
+        _date = State(initialValue: initialState.date)
+        _selectedCategory = State(initialValue: initialState.category)
+        
+        self.initialState = initialState
         self.context = context
     }
     
@@ -59,7 +66,7 @@ struct EditExpenseView: View {
                         }
                         
                     }
-                    DatePicker("Date", selection: $date)
+                    DatePicker("Date", selection: $date, displayedComponents: .date)
                 }
             }
             .navigationTitle(context.titleString)
@@ -67,14 +74,14 @@ struct EditExpenseView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel", systemImage: "xmark") {
-//                        if case title.isEmpty, priceText.isEmpty {
+                        if hasUnsavedChanges {
+                            showCancelConfirmation = true
+                        } else {
                             dismiss()
-//                        } else {
-//                            showCancelConfirmation = true
-//                        }
+                        }
                     }
-                    .confirmationDialog("Discard Expense", isPresented: $showCancelConfirmation) {
-                        Button("Discard Moment", role: .destructive) {
+                    .confirmationDialog("Discard Changes", isPresented: $showCancelConfirmation) {
+                        Button("Discard Changes", role: .destructive) {
                             dismiss()
                         }
                     }
@@ -131,6 +138,28 @@ extension EditExpenseView {
                 return "New Expense"
             case .edit:
                 return "Edit Expense"
+            }
+        }
+    }
+    
+    struct InitialState {
+        let title: String
+        let priceText: String
+        let date: Date
+        let category: ExpenseCategory
+        
+        init(context: Context, currencyManager: CurrencyManager) {
+            switch context {
+            case .new(let category):
+                title = ""
+                priceText = ""
+                date = .now
+                self.category = category
+            case .edit(let expense):
+                title = expense.title
+                priceText = currencyManager.priceText(from: expense.price) ?? ""
+                date = expense.timestamp
+                category = expense.category
             }
         }
     }
