@@ -67,7 +67,7 @@ struct ContentView: View {
                 CustomTimeframeView(timeframeSelection: $timeframeSelection)
             }
             .sheet(isPresented: $showChartsSheet) {
-                ExpenseChartsView()
+                ExpenseChartsView(filteredExpenses: filteredExpenses)
             }
         }
     }
