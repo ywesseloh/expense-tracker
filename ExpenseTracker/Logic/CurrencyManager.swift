@@ -15,13 +15,12 @@ class CurrencyManager {
     private let currencyFormatter: NumberFormatter
     private let decimalFormatter: NumberFormatter
     
-    init(locale: Locale = .current) {
+    init(locale: Locale = Locale(identifier: "de_DE")) {
         self.currencyFormatter = NumberFormatter()
         currencyFormatter.numberStyle = .currency
         currencyFormatter.locale = locale
         currencySymbol = locale.currencySymbol ?? "€"
         currencyCode = locale.currency?.identifier ?? "EUR"
-
         
         self.decimalFormatter = NumberFormatter()
         decimalFormatter.numberStyle = .decimal

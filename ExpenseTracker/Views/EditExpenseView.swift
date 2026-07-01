@@ -22,6 +22,12 @@ struct EditExpenseView: View {
 
     private let initialState: InitialState
     private let context: Context
+    private let maxInputValue = Decimal(1_000_000_000)
+    
+    private var addButtonDisabled: Bool {
+        guard let decimalPrice = currencyManager.decimalPrice(from: priceText) else { return true }
+        return title.isEmpty || priceText.isEmpty || decimalPrice >= maxInputValue
+    }
 
     private var hasUnsavedChanges: Bool {
         title != initialState.title ||
@@ -52,6 +58,11 @@ struct EditExpenseView: View {
                             priceText = currencyManager.formatInput(newValue)
                         }
                         .keyboardType(.decimalPad)
+                    HStack {
+                        Text("Currency")
+                        Spacer()
+                        Text(currencyManager.currencyCode)
+                    }
                 }
                 
                 Section {
@@ -88,7 +99,7 @@ struct EditExpenseView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Add", systemImage: "checkmark", action: updateExpense)
-                        .disabled(title.isEmpty || priceText.isEmpty)
+                        .disabled(addButtonDisabled)
                 }
             }
         }

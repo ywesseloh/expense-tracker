@@ -14,12 +14,14 @@ final class Expense {
     var price: Int
     var timestamp: Date
     var category: ExpenseCategory
+    var currencyCode: String
     
-    init(title: String, price: Int, timestamp: Date, category: ExpenseCategory) {
+    init(title: String, price: Int, timestamp: Date, category: ExpenseCategory, currencyCode: String = "EUR") {
         self.title = title
         self.price = price
         self.timestamp = timestamp
         self.category = category
+        self.currencyCode = currencyCode
     }
 }
 
