@@ -99,6 +99,8 @@ struct ContentView: View {
                 }
             }
         }
+        .animation(.default, value: searchText)
+        .animation(.default, value: selectedTimeframe)
     }
     
     private func dateHeaderview(date: Date) -> some View {
