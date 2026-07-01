@@ -17,6 +17,7 @@ struct ContentView: View {
     
     @State private var selectedTimeframe: ExpenseTimeframe = .untilToday
     @State private var filterCategory: ExpenseCategory?
+    @State private var searchText = ""
     
     @Query(sort: \Expense.timestamp, order: .reverse)
     private var allExpenses: [Expense]
@@ -24,7 +25,8 @@ struct ContentView: View {
     private var filteredExpenses: [Expense] {
         allExpenses.filter { expense in
             selectedTimeframe.contains(expense.timestamp) &&
-            (filterCategory.flatMap { $0 == expense.category } ?? true)
+            (filterCategory.flatMap { $0 == expense.category } ?? true) &&
+            matchesSearch(expense)
         }
     }
         
@@ -50,19 +52,8 @@ struct ContentView: View {
                     filteredEmptyView
                 }
             }
-            .toolbar {
-                ToolbarItem {
-                    Button {
-                        showExpenseSheetWithContext = .new(initialCategory: .noCategory)
-                    } label: {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-                
-                
-                ToolbarItem(placement: .topBarLeading) {
-                    toggleFilterButtonView
-                }
+            .safeAreaInset(edge: .bottom) {
+                floatingBottomBar
             }
             .sheet(item: $showExpenseSheetWithContext) { context in
                 EditExpenseView(currencyManager: currencyManager, context: context)
@@ -160,22 +151,69 @@ struct ContentView: View {
                 .multilineTextAlignment(.center)
         }
     }
+    private var floatingBottomBar: some View {
+        HStack(spacing: 12) {
+            toggleFilterButtonView
+
+            HStack(spacing: 10) {
+                Image(systemName: "magnifyingglass")
+                TextField(
+                    "Search",
+                    text: $searchText,
+                    prompt: Text("Search").foregroundColor(.gray).bold()
+                )
+                .textFieldStyle(.plain)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 14)
+            .glassEffect()
+
+            Button {
+                showExpenseSheetWithContext = .new(initialCategory: .noCategory)
+            } label: {
+                Image(systemName: "plus")
+                    .font(.title2.weight(.semibold))
+                    .frame(width: 35, height: 35)
+            }
+            .buttonStyle(.glass)
+            .buttonBorderShape(.circle)
+        }
+        .padding(.horizontal)
+        .padding(.bottom, 8)
+    }
+
     var filterButtonView: some View {
         Button {
             showFilterCategorySheet = true
         } label: {
             Image(systemName: "line.3.horizontal.decrease")
+                .font(.title2.weight(.semibold))
+                .frame(width: 35, height: 35)
         }
+        .buttonBorderShape(.circle)
     }
     
     @ViewBuilder
     var toggleFilterButtonView: some View {
         if filterCategory == nil {
             filterButtonView
+                .buttonStyle(.glass)
         } else {
             filterButtonView
                 .buttonStyle(.glassProminent)
+            
         }
+    }
+
+    private func matchesSearch(_ expense: Expense) -> Bool {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return true }
+
+        let titleMatches = expense.title.localizedCaseInsensitiveContains(query)
+        let priceMatches = (currencyManager.priceText(from: expense.price) ?? "")
+            .localizedCaseInsensitiveContains(query)
+
+        return titleMatches || priceMatches
     }
 
     private func deleteItems(sectionIndex: Int, offsets: IndexSet) {
