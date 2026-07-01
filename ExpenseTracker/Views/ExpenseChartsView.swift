@@ -47,48 +47,7 @@ struct ExpenseChartsView: View {
                         description: Text("No expenses match the current filters.")
                     )
                 } else {
-                    ScrollView {
-                        VStack(spacing: 24) {
-                            ZStack {
-                                Chart(categorySlices) { slice in
-                                    SectorMark(
-                                        angle: .value("Amount", slice.totalMinorUnits),
-                                        innerRadius: .ratio(0.62),
-                                        angularInset: 1.5
-                                    )
-                                    .foregroundStyle(Color(hex: slice.category.colorHex))
-                                }
-                                .frame(height: 260)
-
-                                VStack(spacing: 4) {
-                                    Text("Total")
-                                        .font(.default.weight(.bold))
-                                        .foregroundStyle(.secondary)
-                                    Text(
-                                        currencyManager.decimalPrice(from: totalMinorUnits),
-                                        format: .currency(code: currencyManager.currencyCode)
-                                    )
-                                    .font(.title2.bold())
-                                }
-                            }
-
-                            VStack(spacing: 12) {
-                                ForEach(categorySlices) { slice in
-                                    HStack {
-                                        CategoryIconView(category: slice.category)
-                                        Text(slice.category.title)
-                                        Spacer()
-                                        Text(
-                                            currencyManager.decimalPrice(from: slice.totalMinorUnits),
-                                            format: .currency(code: currencyManager.currencyCode)
-                                        )
-                                    }
-                                }
-                            }
-                            .padding(.horizontal)
-                        }
-                        .padding(.vertical)
-                    }
+                   listView
                 }
             }
             .navigationTitle("Charts")
@@ -100,6 +59,47 @@ struct ExpenseChartsView: View {
                     }
                 }
             }
+        }
+    }
+    
+    private var listView: some View {
+        List {
+            Section {
+                ZStack {
+                    Chart(categorySlices) { slice in
+                        SectorMark(
+                            angle: .value("Amount", slice.totalMinorUnits),
+                            innerRadius: .ratio(0.62),
+                            angularInset: 1.5
+                        )
+                        .foregroundStyle(Color(hex: slice.category.colorHex))
+                    }
+                    .frame(height: 260)
+                    
+                    VStack(spacing: 4) {
+                        Text("Total")
+                            .font(.default.weight(.bold))
+                            .foregroundStyle(.secondary)
+                        Text(
+                            currencyManager.decimalPrice(from: totalMinorUnits),
+                            format: .currency(code: currencyManager.currencyCode)
+                        )
+                        .font(.title2.bold())
+                    }
+                }.listRowBackground(Color.clear)
+            }
+            
+            ForEach(categorySlices) { slice in
+                HStack {
+                    CategoryIconView(category: slice.category)
+                    Text(slice.category.title)
+                    Spacer()
+                    Text(
+                        currencyManager.decimalPrice(from: slice.totalMinorUnits),
+                        format: .currency(code: currencyManager.currencyCode)
+                    )
+                }
+            }.padding(.horizontal)
         }
     }
 }
