@@ -38,6 +38,7 @@ struct SelectCategoryView: View {
                 }
             }
             .navigationTitle("Select Category")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }

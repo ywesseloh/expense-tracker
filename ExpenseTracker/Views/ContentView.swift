@@ -12,14 +12,20 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(CurrencyManager.self) private var currencyManager
     
-    @State private var showSheetWithContext: EditExpenseView.Context?
+    @State private var showExpenseSheetWithContext: EditExpenseView.Context?
+    @State private var showFilterCategorySheet = false
+    
     @State private var selectedTimeframe: ExpenseTimeframe = .untilToday
+    @State private var filterCategory: ExpenseCategory?
     
     @Query(sort: \Expense.timestamp, order: .reverse)
     private var allExpenses: [Expense]
 
     private var filteredExpenses: [Expense] {
-        allExpenses.filter { selectedTimeframe.contains($0.timestamp) }
+        allExpenses.filter { expense in
+            selectedTimeframe.contains(expense.timestamp) &&
+            (filterCategory.flatMap { $0 == expense.category } ?? true)
+        }
     }
         
     private var expensesByDate: [Date: [Expense]] {
@@ -36,24 +42,33 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack(alignment: .bottomTrailing) {
-                ZStack {
-                    expensesListView
-                    if allExpenses.isEmpty {
-                        emptyView
-                    } else if filteredExpenses.isEmpty {
-                        filteredEmptyView
+            ZStack {
+                expensesListView
+                if allExpenses.isEmpty {
+                    emptyView
+                } else if filteredExpenses.isEmpty {
+                    filteredEmptyView
+                }
+            }
+            .toolbar {
+                ToolbarItem {
+                    Button {
+                        showExpenseSheetWithContext = .new(initialCategory: .noCategory)
+                    } label: {
+                        Label("Add Item", systemImage: "plus")
                     }
                 }
-                Button {
-                    showSheetWithContext = .new(initialCategory: .noCategory)
-                } label: {
-                    FloatingButtonView(backgroundColor: .blue, foregroundColor: .white, imageName: "plus")
+                
+                
+                ToolbarItem(placement: .topBarLeading) {
+                    toggleFilterButtonView
                 }
-                .padding()
             }
-            .sheet(item: $showSheetWithContext) { context in
+            .sheet(item: $showExpenseSheetWithContext) { context in
                 EditExpenseView(currencyManager: currencyManager, context: context)
+            }
+            .sheet(isPresented: $showFilterCategorySheet) {
+                FilterCategoryView(filterCategory: $filterCategory)
             }
         }
     }
@@ -108,7 +123,7 @@ struct ContentView: View {
     
     private func expenseRowView(expense: Expense) -> some View {
         Button {
-            showSheetWithContext = .edit(expense: expense)
+            showExpenseSheetWithContext = .edit(expense: expense)
         } label: {
             HStack {
                 CategoryIconView(category: expense.category)
@@ -143,6 +158,23 @@ struct ContentView: View {
             Text("No expenses match the current filter criteria")
                 .font(.title3)
                 .multilineTextAlignment(.center)
+        }
+    }
+    var filterButtonView: some View {
+        Button {
+            showFilterCategorySheet = true
+        } label: {
+            Image(systemName: "line.3.horizontal.decrease")
+        }
+    }
+    
+    @ViewBuilder
+    var toggleFilterButtonView: some View {
+        if filterCategory == nil {
+            filterButtonView
+        } else {
+            filterButtonView
+                .buttonStyle(.glassProminent)
         }
     }
 
