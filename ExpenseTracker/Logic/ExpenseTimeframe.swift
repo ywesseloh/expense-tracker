@@ -31,9 +31,7 @@ enum ExpenseTimeframe: String, CaseIterable, Identifiable, Equatable {
             guard let interval = calendar.dateInterval(of: .year, for: now) else { return false }
             return interval.contains(date)
         case .untilToday:
-            let startOfToday = calendar.startOfDay(for: now)
-            guard let endOfToday = calendar.date(byAdding: .day, value: 1, to: startOfToday)?
-                .addingTimeInterval(-1) else { return false }
+            guard let endOfToday = calendar.endOfDay(for: .now) else { return false }
             return date <= endOfToday
         }
     }

@@ -14,8 +14,9 @@ struct ContentView: View {
     
     @State private var showExpenseSheetWithContext: EditExpenseView.Context?
     @State private var showFilterCategorySheet = false
+    @State private var showCustomTimeframeSheet = false
     
-    @State private var selectedTimeframe: ExpenseTimeframe = .untilToday
+    @State private var timeframeSelection: ExpenseTimeframeSelection = .preset(.untilToday)
     @State private var filterCategory: ExpenseCategory?
     @State private var searchText = ""
     
@@ -24,7 +25,7 @@ struct ContentView: View {
 
     private var filteredExpenses: [Expense] {
         allExpenses.filter { expense in
-            selectedTimeframe.contains(expense.timestamp) &&
+            timeframeSelection.contains(expense.timestamp) &&
             (filterCategory.flatMap { $0 == expense.category } ?? true) &&
             matchesSearch(expense)
         }
@@ -61,6 +62,9 @@ struct ContentView: View {
             .sheet(isPresented: $showFilterCategorySheet) {
                 FilterCategoryView(filterCategory: $filterCategory)
             }
+            .sheet(isPresented: $showCustomTimeframeSheet) {
+                CustomTimeframeView(timeframeSelection: $timeframeSelection)
+            }
         }
     }
     
@@ -70,12 +74,15 @@ struct ContentView: View {
                 Menu {
                     ForEach(ExpenseTimeframe.allCases) { timeframe in
                         Button(timeframe.title) {
-                            selectedTimeframe = timeframe
+                            timeframeSelection = .preset(timeframe)
                         }
+                    }
+                    Button("Custom") {
+                        showCustomTimeframeSheet = true
                     }
                 } label: {
                     HStack(spacing: 4) {
-                        Text(selectedTimeframe.title)
+                        Text(timeframeSelection.displayTitle)
                         Image(systemName: "chevron.down")
                             .font(.caption)
                     }
@@ -100,7 +107,7 @@ struct ContentView: View {
             }
         }
         .animation(.default, value: searchText)
-        .animation(.default, value: selectedTimeframe)
+        .animation(.default, value: timeframeSelection)
     }
     
     private func dateHeaderview(date: Date) -> some View {
