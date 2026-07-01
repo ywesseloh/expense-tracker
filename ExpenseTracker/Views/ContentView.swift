@@ -15,6 +15,7 @@ struct ContentView: View {
     @State private var showExpenseSheetWithContext: EditExpenseView.Context?
     @State private var showFilterCategorySheet = false
     @State private var showCustomTimeframeSheet = false
+    @State private var showChartsSheet = false
     
     @State private var timeframeSelection: ExpenseTimeframeSelection = .preset(.untilToday)
     @State private var filterCategory: ExpenseCategory?
@@ -65,11 +66,32 @@ struct ContentView: View {
             .sheet(isPresented: $showCustomTimeframeSheet) {
                 CustomTimeframeView(timeframeSelection: $timeframeSelection)
             }
+            .sheet(isPresented: $showChartsSheet) {
+                ExpenseChartsView()
+            }
         }
     }
     
     private var expensesListView: some View {
         List {
+            listHeaderView
+            
+            ForEach(groupedExpenses.enumerated(), id: \.offset) { index, group in
+                Section(header: dateHeaderview(date: group.date)) {
+                    ForEach(group.expenses) { expense in
+                        expenseRowView(expense: expense)
+                    }.onDelete { offsets in
+                        deleteItems(sectionIndex: index, offsets: offsets)
+                    }
+                }
+            }
+        }
+        .animation(.default, value: searchText)
+        .animation(.default, value: timeframeSelection)
+    }
+    
+    private var listHeaderView: some View {
+        HStack {
             VStack(alignment: .leading, spacing: 8) {
                 Menu {
                     ForEach(ExpenseTimeframe.allCases) { timeframe in
@@ -94,20 +116,18 @@ struct ContentView: View {
                 )
                 .font(.title)
             }
-            .padding()
+            Spacer()
             
-            ForEach(groupedExpenses.enumerated(), id: \.offset) { index, group in
-                Section(header: dateHeaderview(date: group.date)) {
-                    ForEach(group.expenses) { expense in
-                        expenseRowView(expense: expense)
-                    }.onDelete { offsets in
-                        deleteItems(sectionIndex: index, offsets: offsets)
-                    }
-                }
+            Button {
+                showChartsSheet = true
+            } label: {
+                Image(systemName: "chart.pie")
+                    .font(.largeTitle)
             }
+            .buttonStyle(.borderless)
+            .buttonBorderShape(.circle)
+            
         }
-        .animation(.default, value: searchText)
-        .animation(.default, value: timeframeSelection)
     }
     
     private func dateHeaderview(date: Date) -> some View {
